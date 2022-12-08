@@ -90,6 +90,22 @@ const log_in = async function (req, res) {
   })(req, res);
 };
 
+const get_admin = (req, res, next) => {
+  if (req.body.password !== process.env.ADMIN_PASS) {
+    return res.json('Wrong Password');
+  } else {
+    User.findByIdAndUpdate(
+      req.user._id,
+      { $set: { admin: true } },
+      {},
+      function (err, result) {
+        if (err) return res.json({ message: err.message });
+        return res.json('Updated Succesfully');
+      }
+    );
+  }
+};
+
 module.export = {
   sign_up,
   log_in,
