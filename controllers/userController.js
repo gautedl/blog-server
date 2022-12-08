@@ -106,7 +106,16 @@ const get_admin = (req, res, next) => {
   }
 };
 
-module.export = {
+const log_out = (req, res, next) => {
+  req.logout(function (err) {
+    if (err) return res.json(err);
+    return res.json('loged out');
+  });
+};
+
+module.exports = {
   sign_up,
   log_in,
+  get_admin,
+  log_out,
 };

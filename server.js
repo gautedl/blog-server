@@ -6,6 +6,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
+const routers = require('./routes/index');
+
 const app = express();
 
 // Connect to mongoose
@@ -29,6 +31,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', function (req, res) {
   res.render('index');
 });
+
+app.use('/', routers);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

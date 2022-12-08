@@ -151,7 +151,7 @@ const post_like = (req, res, next) => {
     {},
     function (err, result) {
       if (err) return res.json({ message: err.message });
-      return res.json('Posted!');
+      return res.json('Liked!');
     }
   );
 };
