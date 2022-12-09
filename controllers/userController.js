@@ -7,7 +7,7 @@ const passport = require('passport');
 require('dotenv').config();
 const bodyParser = require('body-parser');
 
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 
 // creates a user
 const sign_up = [
@@ -45,53 +45,80 @@ const sign_up = [
       const user = new User({
         username: req.body.username,
         password: hashedPassword,
+      }).save((err) => {
+        if (err) {
+          return next(err);
+        }
+        return res.json(user);
       });
-      try {
-        const savedUser = await user.save();
-        return res.json(savedUser);
-      } catch (err) {
-        return res.json({ message: err.message });
-      }
+      // try {
+      //   const savedUser = await user.save();
+      //   return res.json(savedUser);
+      // } catch (err) {
+      //   return res.json({ message: err.message });
+      // }
     });
   },
 ];
+
+// if (err) {
+//   return next(err);
+// }
+// const user = new User({
+//   username: req.body.username,
+//   password: hashedPassword,
+// }).save((err) => {
+//   if (err) {
+//     return next(err);
+//   }
+//   res.redirect('/');
+// });
 
 // const log_in = async (req, res, next) => {
 //   passport.authenticate('login', async(err));
 // };
 
 // Accepts POST requests to the /login endpoint
-const log_in = async function (req, res) {
-  // Get the user's credentials from the request body
-  const { username, password } = req.body;
-
+const log_in = async function (req, res, next) {
   // Authenticate the user using passport
-  passport.authenticate('jwt', async function (err, user) {
-    if (err || !user) {
-      // If there is an error or the user is not found, return an error
-      return res.status(401).json({
-        message: 'Authentication failed',
-        error: err,
-      });
-    } else {
+  passport.authenticate('login', async function (err, user) {
+    try {
+      if (err || !user) {
+        // If there is an error or the user is not found, return an error
+        return res.status(401).json({
+          message: 'Authentication failed',
+          error: err,
+        });
+      }
       // If the user is found, generate a JWT token for the user and return it in the response
-      const token = jwt.sign(
-        {
-          user: user,
-        },
-        process.env.JWT_SECRET
-      );
+      req.login(user, { session: false }, async (error) => {
+        if (error) return next(error);
 
-      return res.json({
-        token: token,
-        user: user,
+        const body = { _id: user._id, username: user.username };
+
+        const token = jwt.sign(
+          {
+            user: body,
+          },
+          process.env.JWT_SECRET,
+          {
+            expiresIn: '1d',
+          }
+        );
+
+        return res.json({
+          token: token,
+        });
       });
+    } catch (err) {
+      return next(err);
     }
-  })(req, res);
+  })(req, res, next);
 };
 
 const get_admin = (req, res, next) => {
   if (req.body.password !== process.env.ADMIN_PASS) {
+    console.log('Wrong pass');
     return res.json('Wrong Password');
   } else {
     User.findByIdAndUpdate(
