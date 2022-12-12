@@ -1,5 +1,5 @@
 const Post = require('../models/post');
-const { body, validationResult } = require('express-validator');
+const { body, validationResult, cookie } = require('express-validator');
 
 // Display posts that are posted
 const posted_posts = async (req, res, next) => {
@@ -29,6 +29,10 @@ const unposted_posts = async (req, res, next) => {
 const create_post = [
   body('title', 'Title must not be empty').trim().isLength({ min: 1 }).escape(),
   body('text', 'Text must not be empty').trim().isLength({ min: 1 }).escape(),
+  body('description', 'Description must be between 1 and 140 characters')
+    .trim()
+    .isLength({ min: 1, max: 140 })
+    .escape(),
 
   async (req, res, next) => {
     const errors = validationResult(req);
@@ -43,6 +47,7 @@ const create_post = [
       const post = new Post({
         title: req.body.title,
         text: req.body.text,
+        description: req.body.description,
         createdAt: new Date(),
         user: req.user,
       });
@@ -77,6 +82,10 @@ const post_post = (req, res, next) => {
 const edit_post = [
   body('title', 'Title must not be empty').trim().isLength({ min: 1 }).escape(),
   body('text', 'Text must not be empty').trim().isLength({ min: 1 }).escape(),
+  body('description', 'Description must be between 1 and 140 characters')
+    .trim()
+    .isLength({ min: 1, max: 140 })
+    .escape(),
 
   async (req, res, next) => {
     const errors = validationResult(req);
@@ -93,6 +102,7 @@ const edit_post = [
           {
             title: req.body.title,
             text: req.body.text,
+            description: req.body.description,
             lastUpdated: new Date(),
             _id: req.params.id,
           }
@@ -123,6 +133,16 @@ const post_detail = async (req, res) => {
   }
 };
 
+//Get number of likes a post has
+const get_likes_post = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    return res.json(post.likes);
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+};
+
 // Delete a post
 const post_delete = async (req, res) => {
   const errors = validationResult(req);
@@ -146,7 +166,7 @@ const post_delete = async (req, res) => {
 // Add a like to the post
 const post_like = (req, res, next) => {
   Post.findByIdAndUpdate(
-    req.body._id,
+    req.params.id,
     { $inc: { likes: 1 } },
     {},
     function (err, result) {
@@ -165,4 +185,5 @@ module.exports = {
   post_post,
   post_delete,
   post_like,
+  get_likes_post,
 };
