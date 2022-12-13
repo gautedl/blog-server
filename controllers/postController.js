@@ -4,9 +4,7 @@ const { body, validationResult, cookie } = require('express-validator');
 // Display posts that are posted
 const posted_posts = async (req, res, next) => {
   try {
-    const posts_list = await Post.find({ posted: true })
-      .populate('user')
-      .populate('comments');
+    const posts_list = await Post.find({ posted: true }).populate('comments');
     return res.json(posts_list);
   } catch (err) {
     return res.json({ message: err.message });
@@ -16,9 +14,7 @@ const posted_posts = async (req, res, next) => {
 // Display posts that aren't posted
 const unposted_posts = async (req, res, next) => {
   try {
-    const posts_list = await Post.find({ posted: false })
-      .populate('user')
-      .populate('comments');
+    const posts_list = await Post.find({ posted: false }).populate('comments');
     return res.json(posts_list);
   } catch (err) {
     return res.json({ message: err.message });

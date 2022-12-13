@@ -1,9 +1,11 @@
 const Comment = require('../models/comment');
 const { body, validationResult } = require('express-validator');
+const Post = require('../models/post');
 
 // Creates a comment
 const comment_create = [
   body('text', 'Text must not be empty').trim().isLength({ min: 1 }).escape(),
+  body('user').trim().escape(),
 
   async (req, res) => {
     const errors = validationResult(req);
@@ -11,14 +13,27 @@ const comment_create = [
     if (!errors.isEmpty()) {
       res.json(errors.array());
     } else {
-      const comment = new Comment({
-        text: req.body.text,
-        dateAdded: new Date(),
-        user: req.user,
-      });
+      let comment;
+      if (req.body.user === '') {
+        comment = new Comment({
+          text: req.body.text,
+          dateAdded: new Date(),
+          user: 'Anon',
+        });
+      } else {
+        comment = new Comment({
+          text: req.body.text,
+          dateAdded: new Date(),
+          user: req.body.user,
+        });
+      }
       try {
         const savedComment = await comment.save();
-        return res.json(savedComment);
+        const updatePost = await Post.updateOne(
+          { _id: req.params.id },
+          { $push: { comments: savedComment } }
+        );
+        return res.json(updatePost);
       } catch (err) {
         return res.json({ message: err.message });
       }
@@ -46,7 +61,7 @@ const comment_delete = async (req, res) => {
 // Like comment
 const comment_like = (req, res, next) => {
   Comment.findByIdAndUpdate(
-    req.body._id,
+    req.params.id,
     { $inc: { likes: 1 } },
     {},
     function (err, result) {
@@ -56,8 +71,19 @@ const comment_like = (req, res, next) => {
   );
 };
 
+//Get number of likes a comment has
+const get_likes_comment = async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.id);
+    return res.json(comment.likes);
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+};
+
 module.exports = {
   comment_create,
   comment_delete,
   comment_like,
+  get_likes_comment,
 };

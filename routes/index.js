@@ -21,9 +21,10 @@ router.post('/admin/post/:id/delete', post_controller.post_delete);
 router.post('/post/:id/like', post_controller.post_like);
 
 /// COMMENT ROUTES ///
-router.post('/post/:id/create_comment', comment_controller.comment_create);
-router.post('/post/:id/:comment_id/like', comment_controller.comment_like);
-router.post('/post/:id/:comment_id/delete', comment_controller.comment_like);
+router.post('/comment/:id/create_comment', comment_controller.comment_create);
+router.post('/comment/:id/like', comment_controller.comment_like);
+router.post('/comment/:id/delete', comment_controller.comment_like);
+router.get('/comment/:id/get_likes', comment_controller.get_likes_comment);
 
 /// USER ROUTES ///
 router.post('/admin/sign_up', user_controller.sign_up);
