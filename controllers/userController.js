@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 require('dotenv').config();
 const bodyParser = require('body-parser');
+const session = require('express-session');
 
 // app.use(bodyParser.json());
 
@@ -106,9 +107,8 @@ const log_in = async function (req, res, next) {
           }
         );
 
-        return res.json({
-          token: token,
-        });
+        req.session.user = user._id;
+        return res.json({ token, user });
       });
     } catch (err) {
       return next(err);
@@ -133,10 +133,21 @@ const get_admin = (req, res, next) => {
   }
 };
 
+const is_logged_in = (req, res) => {
+  console.log(req.session.user);
+  if (req.session.user) {
+    res.status(200).send('Logged In');
+  } else {
+    res.status(401).send('Not logged in');
+  }
+};
+
 const log_out = (req, res, next) => {
   req.logout(function (err) {
-    if (err) return res.json(err);
-    return res.json('loged out');
+    if (err) {
+      return next(err);
+    }
+    return res.json('logged out');
   });
 };
 
@@ -145,4 +156,5 @@ module.exports = {
   log_in,
   get_admin,
   log_out,
+  is_logged_in,
 };

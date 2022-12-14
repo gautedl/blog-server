@@ -29,7 +29,8 @@ router.get('/comment/:id/get_likes', comment_controller.get_likes_comment);
 /// USER ROUTES ///
 router.post('/admin/sign_up', user_controller.sign_up);
 router.post('/admin/log_in', user_controller.log_in);
-router.post('/admin/log_out/:id', user_controller.log_out);
+router.post('/admin/log_out', user_controller.log_out);
 router.post('/admin/user/:id/admin', user_controller.get_admin);
+router.get('/admin/isloggedin', user_controller.is_logged_in);
 
 module.exports = router;

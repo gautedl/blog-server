@@ -5,8 +5,16 @@ const createError = require('http-errors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const bcrypt = require('bcryptjs');
+const session = require('express-session');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 
-const routers = require('./routes/index');
+const passportJWT = require('passport-jwt');
+const JWTStrategy = passportJWT.Strategy;
+const ExtractJWT = passportJWT.ExtractJwt;
+
+const User = require('./models/user');
 
 const app = express();
 
@@ -26,6 +34,87 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Passport auth
+passport.use(
+  'login',
+  new LocalStrategy(
+    {
+      usernameField: 'username',
+      passwordField: 'password',
+    },
+    async (username, password, done) => {
+      try {
+        const user = await User.findOne({ username });
+
+        if (!user) {
+          return done(null, false, { message: 'User not found' });
+        }
+
+        const validate = await bcrypt.compare(password, user.password);
+
+        if (!validate) {
+          return done(null, false, { message: 'Wrong Password' });
+        }
+
+        return done(null, user, { message: 'Logged in Succesfully' });
+      } catch (error) {
+        return done(error);
+      }
+    }
+  )
+);
+
+passport.use(
+  new JWTStrategy(
+    {
+      secretOrKey: process.env.JWT_SECRET,
+      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+    },
+    async (token, done) => {
+      try {
+        return done(null, token.user);
+      } catch (err) {
+        done(err);
+      }
+    }
+  )
+);
+
+passport.use(
+  'signup',
+  new LocalStrategy(
+    {
+      usernameField: 'username',
+      passwordField: 'passowrd',
+    },
+    async (username, password, done) => {
+      try {
+        const user = await User.create({ username, password });
+        return done(null);
+      } catch (err) {
+        done(err);
+      }
+    }
+  )
+);
+
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
+});
+
+passport.deserializeUser(function (id, done) {
+  User.findById(id, function (err, user) {
+    done(err, user);
+  });
+});
+
+app.use(session({ secret: 'cats', resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(express.urlencoded({ extended: false }));
+
+const routers = require('./routes/index');
 
 /* GET home page. */
 app.get('/', function (req, res) {
