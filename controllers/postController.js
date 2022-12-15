@@ -46,6 +46,7 @@ const create_post = [
         description: req.body.description,
         createdAt: new Date(),
         user: req.user,
+        posted: req.body.posted,
       });
       try {
         const savedPost = await post.save();

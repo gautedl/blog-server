@@ -28,15 +28,14 @@ const sign_up = [
 
   async (req, res, next) => {
     const errors = validationResult(req);
-    console.log(req.body);
 
     const existUsername = await User.findOne({ username: req.body.username });
     if (existUsername) {
-      res.json('Username is taken');
+      return res.json('Username is taken');
     }
 
     if (!errors.isEmpty()) {
-      res.json(errors.array());
+      return res.json(errors.array());
     }
 
     bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
@@ -50,7 +49,7 @@ const sign_up = [
         if (err) {
           return next(err);
         }
-        return res.json(user);
+        return res.json('Success');
       });
       // try {
       //   const savedUser = await user.save();
@@ -107,7 +106,7 @@ const log_in = async function (req, res, next) {
           }
         );
 
-        req.session.user = user._id;
+        req.session.user = user;
         return res.json({ token, user });
       });
     } catch (err) {
@@ -118,27 +117,25 @@ const log_in = async function (req, res, next) {
 
 const get_admin = (req, res, next) => {
   if (req.body.password !== process.env.ADMIN_PASS) {
-    console.log('Wrong pass');
     return res.json('Wrong Password');
   } else {
     User.findByIdAndUpdate(
-      req.user._id,
+      req.session.user._id,
       { $set: { admin: true } },
       {},
       function (err, result) {
-        if (err) return res.json({ message: err.message });
-        return res.json('Updated Succesfully');
+        if (err) return res.json({ msg: err.message });
+        return res.json({ msg: 'Updated Succesfully', user: req.session.user });
       }
     );
   }
 };
 
 const is_logged_in = (req, res) => {
-  console.log(req.session.user);
   if (req.session.user) {
-    res.status(200).send('Logged In');
+    return res.json('Logged in');
   } else {
-    res.status(401).send('Not logged in');
+    return res.json('Not logged in');
   }
 };
 
