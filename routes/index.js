@@ -27,6 +27,7 @@ router.post('/comment/:id/delete', comment_controller.comment_like);
 router.get('/comment/:id/get_likes', comment_controller.get_likes_comment);
 
 /// USER ROUTES ///
+router.get('/users', user_controller.get_all_users);
 router.post('/admin/sign_up', user_controller.sign_up);
 router.post('/admin/log_in', user_controller.log_in);
 router.post('/admin/log_out', user_controller.log_out);

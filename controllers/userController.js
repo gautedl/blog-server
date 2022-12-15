@@ -10,6 +10,15 @@ const session = require('express-session');
 
 // app.use(bodyParser.json());
 
+const get_all_users = async (req, res, next) => {
+  try {
+    const users_list = await User.find();
+    return res.json(users_list);
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+};
+
 // creates a user
 const sign_up = [
   body('username', 'username must not be empty')
@@ -154,4 +163,5 @@ module.exports = {
   get_admin,
   log_out,
   is_logged_in,
+  get_all_users,
 };
