@@ -44,15 +44,46 @@ const comment_create = [
 // Edit comment
 // Not sure if needed
 
+const delete_comment_post = async (req, res) => {
+  try {
+    const updatePost = await Post.updateOne(
+      { _id: req.body.id },
+      { $pull: { comments: req.params.id } }
+    );
+    return res.json('removed');
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+};
+
 // Delete comment as an admin
 const comment_delete = async (req, res) => {
   try {
-    if (req.user.admin === false) {
+    if (req.session.user.admin === false) {
       return res.json('Not an admin');
     } else {
       const deleteComment = await Comment.findByIdAndDelete(req.params.id);
-      return res.json(deleteComment);
+
+      return res.json('deleted');
     }
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+};
+
+// Deletes all comments - takes post id as param
+const delete_all_comments = async (req, res) => {
+  try {
+    if (req.session.user.admin === false) {
+      return res.json('Not an admin');
+    }
+
+    const deleteComments = await Post.findById(req.params.id);
+
+    const deleteAll = await Comment.deleteMany({
+      _id: { $in: deleteComments.comments },
+    });
+    return res.json('deleted');
   } catch (err) {
     return res.json({ message: err.message });
   }
@@ -86,4 +117,6 @@ module.exports = {
   comment_delete,
   comment_like,
   get_likes_comment,
+  delete_all_comments,
+  delete_comment_post,
 };

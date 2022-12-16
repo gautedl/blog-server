@@ -33,7 +33,7 @@ const create_post = [
   async (req, res, next) => {
     const errors = validationResult(req);
 
-    if (req.user.admin === false) {
+    if (req.session.user.admin === false) {
       return res.json('Not an admin');
     }
 
@@ -45,12 +45,12 @@ const create_post = [
         text: req.body.text,
         description: req.body.description,
         createdAt: new Date(),
-        user: req.user,
+        user: req.body.user,
         posted: req.body.posted,
       });
       try {
         const savedPost = await post.save();
-        return res.json(savedPost);
+        return res.json('posted');
       } catch (err) {
         return res.json({ message: err.message });
       }
@@ -60,7 +60,7 @@ const create_post = [
 
 // Post a post
 const post_post = (req, res, next) => {
-  if (req.user.admin === false) {
+  if (req.session.user.admin === false) {
     return res.json('Not and Admin');
   } else {
     Post.findByIdAndUpdate(
@@ -91,7 +91,8 @@ const edit_post = [
       res.json(errors.array());
     } else {
       try {
-        if (req.user.admin === false) {
+        console.log(req.session);
+        if (req.session.user.admin === false) {
           return res.json('Not an admin');
         }
         const updatePost = await Post.updateOne(
@@ -101,10 +102,12 @@ const edit_post = [
             text: req.body.text,
             description: req.body.description,
             lastUpdated: new Date(),
+            user: req.body.user,
+            posted: req.body.posted,
             _id: req.params.id,
           }
         );
-        return res.json(updatePost);
+        return res.json('Updated');
       } catch (err) {
         return res.json({ message: err.message });
       }
@@ -149,11 +152,11 @@ const post_delete = async (req, res) => {
   }
 
   try {
-    if (req.user.admin === false) {
+    if (req.session.user.admin === false) {
       return res.json('Not an admin');
     } else {
       const deletePost = await Post.findByIdAndDelete(req.params.id);
-      return res.json(deletePost);
+      return res.json('Deleted');
     }
   } catch (err) {
     return res.json({ message: err.message });

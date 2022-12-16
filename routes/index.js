@@ -23,8 +23,10 @@ router.post('/post/:id/like', post_controller.post_like);
 /// COMMENT ROUTES ///
 router.post('/comment/:id/create_comment', comment_controller.comment_create);
 router.post('/comment/:id/like', comment_controller.comment_like);
-router.post('/comment/:id/delete', comment_controller.comment_like);
+router.post('/comment/:id/delete', comment_controller.comment_delete);
 router.get('/comment/:id/get_likes', comment_controller.get_likes_comment);
+router.post('/comment/:id/delete_all', comment_controller.delete_all_comments);
+router.post('/comment/:id/post_delete', comment_controller.delete_comment_post);
 
 /// USER ROUTES ///
 router.get('/users', user_controller.get_all_users);
