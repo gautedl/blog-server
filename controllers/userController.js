@@ -60,32 +60,9 @@ const sign_up = [
         }
         return res.json('Success');
       });
-      // try {
-      //   const savedUser = await user.save();
-      //   return res.json(savedUser);
-      // } catch (err) {
-      //   return res.json({ message: err.message });
-      // }
     });
   },
 ];
-
-// if (err) {
-//   return next(err);
-// }
-// const user = new User({
-//   username: req.body.username,
-//   password: hashedPassword,
-// }).save((err) => {
-//   if (err) {
-//     return next(err);
-//   }
-//   res.redirect('/');
-// });
-
-// const log_in = async (req, res, next) => {
-//   passport.authenticate('login', async(err));
-// };
 
 // Accepts POST requests to the /login endpoint
 const log_in = async function (req, res, next) {
@@ -124,6 +101,7 @@ const log_in = async function (req, res, next) {
   })(req, res, next);
 };
 
+// Gives a user the admin role
 const get_admin = (req, res, next) => {
   if (req.body.password !== process.env.ADMIN_PASS) {
     return res.json('Wrong Password');
@@ -140,6 +118,7 @@ const get_admin = (req, res, next) => {
   }
 };
 
+// Checks if user is logged in to the server
 const is_logged_in = (req, res) => {
   if (req.session.user) {
     return res.json('Logged in');
@@ -148,6 +127,7 @@ const is_logged_in = (req, res) => {
   }
 };
 
+// Logs out the user
 const log_out = (req, res, next) => {
   req.logout(function (err) {
     if (err) {

@@ -41,9 +41,7 @@ const comment_create = [
   },
 ];
 
-// Edit comment
-// Not sure if needed
-
+// Deletes the comment from the post
 const delete_comment_post = async (req, res) => {
   try {
     const updatePost = await Post.updateOne(
